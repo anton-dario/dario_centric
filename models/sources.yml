@@ -1,0 +1,42 @@
+
+version: 2
+
+sources:
+    - name: eligibility
+      database: lake
+      schema:   eligibility_eligibility #test table in schema loads 
+      tables:
+        # - name: employers
+        #   description: eligibility employers source table in snowlake lake database after fivetran replication
+        #   loader: fivetran
+        #   loaded_at_field: _fivetran_synced
+        #   # meta fields are rendered in auto-generated documentation
+          # meta:
+          #   contains_pii: false
+          #   owner: "@Ron Weisgross"
+        - name: eligibility_list
+          description: source of all users(EID) that ligible(or were) by their employers to use Dario's products 
+          loader: fivetran
+          loaded_at_field: _fivetran_synced
+          identifier: eligibility_list #stage_solera_user  - table name of demo table 
+          # meta fields are rendered in auto-generated documentation
+          meta:
+            contains_pii: false
+            owner: "@Ron Weisgross"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 6, period: hour}
+            error_after: {count: 24, period: hour}
+
+    - name: milestone_billing
+      # database: dwh
+      schema:  dbt_dev_anton
+      tables:
+        - name: milestone_billing_users_dim
+          description: current state of all milestone billing previously enrolled users 
+          loaded_at_field: dwh_updated_at
+          meta:
+            contains_pii: false
+            owner: "@Anton Smartenko"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
