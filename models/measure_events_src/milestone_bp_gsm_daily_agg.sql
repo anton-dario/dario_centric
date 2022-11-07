@@ -1,7 +1,6 @@
 
 {{ config(materialized='incremental',
-          unique_key = ['eid', 'uid', 'employer_id', 'measured_dt'],
-          on_schema_change='sync_all_columns'
+          unique_key = ['eid', 'uid', 'employer_id', 'measured_dt']
 
           )
 }} 

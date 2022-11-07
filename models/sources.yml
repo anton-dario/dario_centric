@@ -3,7 +3,7 @@ version: 2
 
 sources:
     - name: eligibility
-      database: lake
+      database: stg_dwh #lake
       schema:   eligibility_eligibility #test table in schema loads 
       tables:
         # - name: employers
@@ -27,6 +27,19 @@ sources:
             warn_after: {count: 6, period: hour}
             error_after: {count: 24, period: hour}
 
+        - name: employers
+          description: eligibility employer source entity
+          loader: fivetran
+          loaded_at_field: _fivetran_synced
+          identifier: employers 
+          meta:
+            contains_pii: false
+            owner: "@Ron Weisgross"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 6, period: hour}
+            error_after: {count: 24, period: hour}
+
+
     - name: milestone_billing
       # database: dwh
       schema:  dbt_dev_anton
@@ -40,3 +53,87 @@ sources:
           freshness: # 5tran syncs every hour for this schema
             warn_after: {count: 2, period: day}
             error_after: {count: 5, period: day}
+
+
+    - name: phi_db
+      database: stg_dwh #phi_db
+      schema:  bknd_searchstat
+      tables:
+        - name: eligibility_b2b_data
+          description: connectivity between the users(uid) and specific device that they got(should be gotten)
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+        - name: event_type_field
+          description: tbd
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+        - name: event_type
+          description: tbd
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+        - name: event_type_field_value
+          description: tbd
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+        - name: event_generic
+          description: tbd
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+
+
+
+    - name: bknd_dariocare
+      database: stg_dwh #lake
+      schema:  bknd_dariocare
+      tables:
+        - name: api_clinics
+          description: tbd
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+        - name: provisioning
+          description: tbd
+          loaded_at_field: _fivetran_synced
+          meta:
+            contains_pii: false
+            owner: "@Edan Feiles"
+          freshness: # 5tran syncs every hour for this schema
+            warn_after: {count: 2, period: day}
+            error_after: {count: 5, period: day}
+
+

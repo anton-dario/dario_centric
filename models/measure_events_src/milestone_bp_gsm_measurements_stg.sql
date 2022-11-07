@@ -9,7 +9,7 @@ select id as employer_id,
        name as employer_name,
        to_number(external_id) as external_id
 from 
-LAKE.ELIGIBILITY_ELIGIBILITY.EMPLOYERS
+{{ source('eligibility','employers') }}
 where id in ({{ var('employer_id') }})
 ),
 
@@ -25,10 +25,10 @@ select  elig_b2b.eid,
         api.dcuid as device_clinic_id, 
         api.name  as device_name, 
         api.config as device_config_json
-from lake.bknd_dariocare.provisioning pp
-left outer join lake.bknd_dariocare.api_clinics api         
+from {{ source('bknd_dariocare','provisioning') }} pp
+left outer join {{ source('bknd_dariocare','api_clinics') }} api         
         on pp.clinic_id = api.dcuid
-left outer join phi_db.bknd_searchstat.eligibility_b2b_data elig_b2b 
+left outer join {{ source('phi_db','eligibility_b2b_data') }} elig_b2b 
         on pp.uid = elig_b2b.uid
 left outer join external_employer_id ext
         on elig_b2b.employer_id = ext.external_id
@@ -45,8 +45,8 @@ blood_pressure_types as
   select f.id as event_type_field_id,
          f.name as event_type_field_name,
          t.id   as event_type_id
-    from phi_db.bknd_searchstat.event_type t
-    inner join phi_db.bknd_searchstat.event_type_field f
+    from {{ source('phi_db','event_type') }} t
+    inner join {{ source('phi_db','event_type_field') }} f
         on t.id = f.event_type_id
   where lower(t.name) like '%blood%pressure%'
     and f.name in ('systolic','diastolic')
@@ -63,8 +63,8 @@ select  u.eid
         ,e.deviceutc                    as measured_at
         ,e.localutc                     as server_arrived_at
         ,e._fivetran_synced             as dwh_synced_at
-from phi_db.bknd_searchstat.event_generic e 
-inner join phi_db.bknd_searchstat.event_type_field_value val 
+from {{ source('phi_db','event_generic') }} e 
+inner join {{ source('phi_db','event_type_field_value') }} val 
         on e.id = val.event_generic_id
 inner join blood_pressure_types bpt
         on val.event_type_field_id = bpt.event_type_field_id

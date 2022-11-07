@@ -26,7 +26,13 @@ raw_sys as (
                 /*max only for getting 1 and one row in case multiple number of measurements*/
                 ,max(event_generic_id) as event_generic_id
         
-        from {{ref('milestone_bp_gsm_measurements_stg')}} raw
+        from --(
+            --select * from 
+            {{ref('milestone_bp_gsm_measurements_stg')}} 
+            --union all
+            --select * from {{ref('milestone_bp_gsm_measurements_stg')}}__qa --relevant only for QA and should be removed afterwards
+            --) 
+            raw
         inner join look_for_the_lowest_systolic_value_per_day low_sys
                 on raw.eid = low_sys.eid
                 and raw.uid = low_sys.uid

@@ -30,7 +30,16 @@ with full_outer_join_4_new_status as (
                  ,coalesce(new.eid, curr.eid) as eid
                  ,coalesce(new.employer_id, curr.employer_id) as employer_id
 
-        from {{ref('milestone_elig_updated_users_stg')}} new 
+        from --( 
+            --select * from 
+            {{ref('milestone_elig_updated_users_stg')}} 
+            -- union all
+            -- select * from {{ref('milestone_elig_updated_users_stg')}}__qa --relevant only for QA and should be removed afterwards
+            --)
+            new 
+
+
+
         full outer join {{ source('milestone_billing','milestone_billing_users_dim') }} curr 
             on new.eid = curr.eid
             and new.uid = curr.uid

@@ -107,7 +107,7 @@ dim_based_on_measurement_logic as (
                               /* M2 & M3 count measurement days */
              sum(case when agg.measured_dt between milestone2_start_dt and milestone2_end_dt
                   then 1 else 0 end) as m2_measument_days,
-             sum(case when agg.measured_dt between milestone3_start_dt and milestone3_start_dt
+             sum(case when agg.measured_dt between milestone3_start_dt and milestone3_end_dt
                   then 1 else 0 end) as m3_measument_days,      
 
                               /* M2 & M3 achivement logic*/
