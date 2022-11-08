@@ -1,6 +1,6 @@
 
 {{ config(materialized='incremental',
-          unique_key = ['eid', 'uid', 'employer_id', 'measured_dt']
+          unique_key = 'dwh_hash_id'
 
           )
 }} 
@@ -8,7 +8,7 @@
 
 with source as (
 
-select  
+select  {{ dbt_utils.surrogate_key(['stg.eid', 'stg.employer_id', 'stg.measured_dt']) }}  as dwh_hash_id,
         stg.*,
         sysdate() as dwh_modify_at
 from {{ref('milestone_bp_gsm_measure_daily_stg')}} stg

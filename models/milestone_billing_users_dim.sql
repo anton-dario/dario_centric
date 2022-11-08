@@ -49,16 +49,19 @@ with dim_refresh as (
              case when dim.dwh_created_at is not null 
                   then dim.dwh_created_at
                   else sysdate() end                                                      as dwh_created_at,
-             case when new.eid is null  
-                  then dim.dwh_updated_at
-                  else sysdate() end                                                      as dwh_updated_at,
 
              case when new.milestone is null then dim.milestone                                                   
                   else new.milestone end as milestone,
 
              dim.m2_achieved_dt,
              dim.m3_achieved_dt,
-             coalesce(new.last_milestone_change_dt, dim.last_milestone_change_dt) as last_milestone_change_dt,
+
+                                        /*last_milestone_change_dt currently updated only on the next run - 
+                                             this change will solve this delay issue*/
+             --coalesce(new.last_milestone_change_dt, dim.last_milestone_change_dt) as last_milestone_change_dt,
+             coalesce(new.last_milestone_change_dt, dim.last_milestone_change_dt)         as last_milestone_change_dt,
+             coalesce(dim.dwh_updated_at,dwh_created_at,{{ var("run_date") }})            as dwh_updated_at,
+             
              dim.is_m2_achieved,
              dim.is_m3_achieved
 
@@ -119,11 +122,11 @@ dim_based_on_measurement_logic as (
                               /*M2 & M3 achivement dates*/
              case when dim.m2_achieved_dt is null and _is_m2_achieved 
                   then {{ var("run_date") }} 
-                  else dim.m2_achieved_dt end as m2_achieved_dt,
+                  else dim.m2_achieved_dt end as _m2_achieved_dt,
 
              case when dim.m3_achieved_dt is null and _is_m3_achieved 
                   then {{ var("run_date") }} 
-                  else dim.m3_achieved_dt end as m3_achieved_dt,
+                  else dim.m3_achieved_dt end as _m3_achieved_dt,
 
                               /*Current Max Milestone achieved*/
              case when _is_m3_achieved then 3                                                   --M4 & M5 should be added here
@@ -135,13 +138,11 @@ dim_based_on_measurement_logic as (
 
                          /*Last milestone change date*/
              greatest(dim.last_milestone_change_dt,
-                      coalesce(m2_achieved_dt,'01-jan-1900'),
-                      coalesce(m3_achieved_dt,'01-jan-1900'))    as last_milestone_change_dt,      --M4 & M5 should be added here
+                      coalesce(_m2_achieved_dt,'01-jan-1900'),
+                      coalesce(_m3_achieved_dt,'01-jan-1900'))    as _last_milestone_change_dt,      --M4 & M5 should be added here
 
 
-             case when last_milestone_change_dt > dim.dwh_updated_at
-                  then last_milestone_change_dt
-                  else dim.dwh_updated_at end                    as dwh_updated_at 
+             greatest(dwh_updated_at, dwh_created_at)            as dwh_updated_at 
 
      from dim_refresh dim
 
@@ -190,14 +191,14 @@ select         dim.eid,
                dim.next_renewal_dt,
                dim.last_measurement_dt,
                dim.last_ineligibility_dt,
-               dim.last_milestone_change_dt, 
+               dim._last_milestone_change_dt as last_milestone_change_dt, 
 
                dim._is_m2_achieved as is_m2_achieved,
                dim._is_m3_achieved as is_m3_achieved,                  
                false as is_m4_achieved,               
                false as is_m5_achieved,                 
-               dim.m2_achieved_dt,                  
-               dim.m3_achieved_dt,                  
+               dim._m2_achieved_dt as m2_achieved_dt,                 
+               dim._m3_achieved_dt as m3_achieved_dt,                
                null as m4_achieved_dt,                  
                null as m5_achieved_dt,                 
 
